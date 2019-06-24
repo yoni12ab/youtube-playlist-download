@@ -1,0 +1,23 @@
+{
+  "name": "download_youtube_playlist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc",
+    "dev": "ts-node-dev --respawn --transpileOnly ./index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cheerio": "^0.22.11",
+    "@types/puppeteer": "^1.12.4",
+    "cheerio": "^1.0.0-rc.3",
+    "puppeteer": "^1.18.0",
+    "ts-node-dev": "^1.0.0-pre.40",
+    "typescript": "^3.5.2",
+    "ytdl-core": "^0.29.2"
+  }
+}
