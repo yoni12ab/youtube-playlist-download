@@ -3,12 +3,8 @@ import ytdl from "ytdl-core";
 import cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 import { Song } from './models/song.model';
-debugger
-
-
 
 start();
-
 
 async function start(){
     const [program, __, playlistId] = process.argv;
@@ -22,7 +18,6 @@ async function start(){
     } else {
         console.log('no songs');
     }
-    // .forEach(async vid=> await downloadVideo(vid));
 }
 
 
@@ -31,7 +26,6 @@ async function* getSongsFileNames(songs: Array<Song>): AsyncIterableIterator<str
         yield await downloadVideo(song);
     }
 }
-
 
 function downloadVideo({id,name}: Song): Promise<string> {
     return new Promise((success,fail)=>{
@@ -46,15 +40,12 @@ function downloadVideo({id,name}: Song): Promise<string> {
     });
 }
 
-
 async function getSongsIds(playlistId: string): Promise<Array<Song>|null> {
     const url = `https://www.youtube.com/playlist?list=${playlistId}`;
     const html = await getHtml(url);
     const songs = html && await extractVideosList(html) || null;
-    // generate in Youtube page
     return songs;
 }
-
 
 function extractVideosList(html: string): Array<Song>{
     const $ = cheerio.load(html);
@@ -69,8 +60,6 @@ function extractVideosList(html: string): Array<Song>{
      })
      return videos;
  }
-
-
 
 async function getHtml(url: string): Promise<string|null>  {
     const browser = await puppeteer.launch();
