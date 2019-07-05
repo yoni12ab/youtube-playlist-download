@@ -5,11 +5,16 @@ import puppeteer from 'puppeteer';
 import { Song } from './models/song.model';
 
 start();
-
+const OUTPUT_DIR='output';
 async function start(){
     const [program, __, playlistId] = process.argv;
+    console.log('playlistId',playlistId)
     const songs = await getSongsIds(playlistId);
     if(songs){
+        if (!fs.existsSync(OUTPUT_DIR)){
+            fs.mkdirSync(OUTPUT_DIR);
+        }
+       
         console.log('Start downloading');
         for await (const songFileName of getSongsFileNames(songs)){
             console.log(`Done ${songFileName}`);
@@ -29,14 +34,26 @@ async function* getSongsFileNames(songs: Array<Song>): AsyncIterableIterator<str
 
 function downloadVideo({id,name}: Song): Promise<string> {
     return new Promise((success,fail)=>{
-        let video = ytdl(`https://www.youtube.com/watch?v=${id}`, {format: 'mp3'});
-        
-        video.pipe(fs.createWriteStream(`output/${name}.mp3`));
-        
-        video.on('end', () => {
-            // console.log(`Done ${name}.mp3`);
-            success(`${name}.mp3`);
-        });
+        const fileName = `${OUTPUT_DIR}/${name}.mp3`;
+        if (!fs.existsSync(fileName)){
+            try {
+                let video = ytdl(`https://www.youtube.com/watch?v=${id}`, { filter:'audio' });
+            
+                video.pipe(fs.createWriteStream(fileName));
+                
+                video.on('end', () => {
+                    setTimeout(()=>{
+                        // console.log(`Done ${name}.mp3`);
+                        success(`${name}.mp3`);
+                    },2000);
+                });
+            } catch (error) {
+                success(`error ${error}`);
+            }
+            
+        } else {
+            success(`already exists ${name}.mp3`);
+        }
     });
 }
 
