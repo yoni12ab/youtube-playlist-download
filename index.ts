@@ -1,20 +1,17 @@
 import fs from 'fs';
-import ytdl from "ytdl-core";
+
 import cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 import { Song } from './models/song.model';
+import  {Worker} from 'worker_threads';
 
 start();
-const OUTPUT_DIR='output';
 async function start(){
     const [program, __, playlistId] = process.argv;
     console.log('playlistId',playlistId)
     const songs = await getSongsIds(playlistId);
     if(songs){
-        if (!fs.existsSync(OUTPUT_DIR)){
-            fs.mkdirSync(OUTPUT_DIR);
-        }
-       
+        
         console.log('Start downloading');
         for await (const songFileName of getSongsFileNames(songs)){
             console.log(`Done ${songFileName}`);
@@ -32,27 +29,60 @@ async function* getSongsFileNames(songs: Array<Song>): AsyncIterableIterator<str
     }
 }
 
-function downloadVideo({id,name}: Song): Promise<string> {
+function downloadVideo(song: Song): Promise<string> {
     return new Promise((success,fail)=>{
-        const fileName = `${OUTPUT_DIR}/${name}.mp3`;
+        const fileName = `${song.name}.mp3`;
         if (!fs.existsSync(fileName)){
             try {
-                let video = ytdl(`https://www.youtube.com/watch?v=${id}`, { filter:'audio' });
-            
-                video.pipe(fs.createWriteStream(fileName));
-                
-                video.on('end', () => {
-                    setTimeout(()=>{
-                        // console.log(`Done ${name}.mp3`);
-                        success(`${name}.mp3`);
-                    },2000);
+                const worker = new Worker(`${__dirname}/downloadWorker.js`,{ workerData : {song , fileName} });
+                worker.on('message',()=> {
+                    
+                    worker.terminate(()=>success(`${song.name}.mp3`));
                 });
+                worker.on('error',(err)=>{
+                   worker.terminate(fail);
+                });
+                worker.on('exit', (code) => {
+                    if (code !== 0){
+                        worker.terminate(fail);
+                    }
+
+                    worker.terminate(()=>success(`${song.name}.mp3`));
+                  })
+                //  ffmpeg({source:videoStream})
+                // .audioCodec('libmp3lame')
+                // .audioBitrate(128)
+                // .format('mp3')
+                // .on('error', (err: any) => console.error(err))
+                // .on('end', () => success(`${name}.mp3`))
+                // .save(fileName);
+
+                // proc.setFfmpegPath(ffmpegInstaller.path);
+                // proc.saveToFile(fileName, (stdout, stderr)=>{
+                //     setTimeout(()=>{
+                //         if(stderr){
+                //             console.log('stderr',stderr)
+                //             success(`error ${stderr}`)
+                //         }; 
+                        
+                //         success(`${name}.mp3`);
+                //     },2000);
+                // });
+                // video.pipe(fs.createWriteStream(fileName));
+                
+                // video.on('end', () => {
+                //     setTimeout(()=>{
+                //         // console.log(`Done ${name}.mp3`);
+                //         success(`${name}.mp3`);
+                //     },2000);
+                // });
             } catch (error) {
+                console.log('stderr',error)
                 success(`error ${error}`);
             }
             
         } else {
-            success(`already exists ${name}.mp3`);
+            success(`already exists ${song.name}.mp3`);
         }
     });
 }

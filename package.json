@@ -12,9 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.19",
     "@types/cheerio": "^0.22.11",
     "@types/puppeteer": "^1.12.4",
     "cheerio": "^1.0.0-rc.3",
+    "fluent-ffmpeg": "^2.1.2",
     "puppeteer": "^1.18.0",
     "ts-node-dev": "^1.0.0-pre.40",
     "typescript": "^3.5.2",
