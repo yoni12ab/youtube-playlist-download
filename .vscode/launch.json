@@ -7,19 +7,28 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch server debug",
-      "program": "${workspaceRoot}/node_modules/ts-node-dev/bin/ts-node-dev",
-      "args": [
-        "--inspect",
-        "--no-notify",
-        "--respawn",
-        "--transpileOnly",
-        "./",
-        "PLbXAgsnPq-EOvL14k9ZgyuUJ8ZSaE62Tj"
-      ],
-      "protocol": "inspector",
-      "internalConsoleOptions": "openOnSessionStart",
-      "port": 9229
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/index.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "args": ["PLBvqbT8c-E_IBvDKGIlBIYb6IKmodhfq7"],
+      "outFiles": ["${workspaceFolder}/build/**/*.js"]
     }
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch server debug",
+    //   "program": "${workspaceRoot}/node_modules/ts-node-dev/bin/ts-node-dev",
+    //   "args": [
+    //     "--inspect",
+    //     "--no-notify",
+    //     "--respawn",
+    //     "--transpileOnly",
+    //     "./",
+    //     "PLBvqbT8c-E_IBvDKGIlBIYb6IKmodhfq7"
+    //   ],
+    //   "protocol": "inspector",
+    //   "internalConsoleOptions": "openOnSessionStart",
+    //   "port": 9229
+    // }
   ]
 }

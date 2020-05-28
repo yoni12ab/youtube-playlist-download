@@ -10,7 +10,7 @@ async function start() {
   const [program, __, playlistId] = process.argv;
   console.log('playlistId', playlistId);
   const songs = await getSongsIds(playlistId);
-  if (songs) {
+  if (songs && songs.length) {
     console.log('Start downloading');
     for await (const songFileName of getSongsFileNames(songs)) {
       console.log(`Done ${songFileName}`);
@@ -39,48 +39,23 @@ function downloadVideo(song: Song): Promise<string> {
     if (!fs.existsSync(fileName)) {
       try {
         const worker = new Worker(`${__dirname}/downloadWorker.js`, {
-          workerData: { song, fileName }
+          workerData: { song, fileName },
         });
         worker.on('message', () => {
           worker.terminate(() => success(`${song.name}.mp3`));
         });
-        worker.on('error', err => {
-          worker.terminate(fail);
+        worker.on('error', (err) => {
+          worker.terminate(() =>
+            success(`ERROR ${song.name}.mp3 : ${err.message}`)
+          );
         });
-        worker.on('exit', code => {
+        worker.on('exit', (code) => {
           if (code !== 0) {
-            worker.terminate(fail);
+            worker.terminate(() => success(`ERROR ${song.name}.mp3`));
           }
 
           worker.terminate(() => success(`${song.name}.mp3`));
         });
-        //  ffmpeg({source:videoStream})
-        // .audioCodec('libmp3lame')
-        // .audioBitrate(128)
-        // .format('mp3')
-        // .on('error', (err: any) => console.error(err))
-        // .on('end', () => success(`${name}.mp3`))
-        // .save(fileName);
-
-        // proc.setFfmpegPath(ffmpegInstaller.path);
-        // proc.saveToFile(fileName, (stdout, stderr)=>{
-        //     setTimeout(()=>{
-        //         if(stderr){
-        //             console.log('stderr',stderr)
-        //             success(`error ${stderr}`)
-        //         };
-
-        //         success(`${name}.mp3`);
-        //     },2000);
-        // });
-        // video.pipe(fs.createWriteStream(fileName));
-
-        // video.on('end', () => {
-        //     setTimeout(()=>{
-        //         // console.log(`Done ${name}.mp3`);
-        //         success(`${name}.mp3`);
-        //     },2000);
-        // });
       } catch (error) {
         console.log('stderr', error);
         success(`error ${error}`);
@@ -104,13 +79,10 @@ function extractVideosList(html: string): Array<Song> {
   const domVideosArr = $(
     'ytd-playlist-video-list-renderer a.ytd-playlist-video-renderer'
   );
-  domVideosArr.toArray().forEach(a => {
+  domVideosArr.toArray().forEach((a) => {
     const idArr = /(?<=watch\?v\=).*(?=\&list)/.exec(a.attribs.href);
     const id = (idArr && idArr[0]) || '';
-    let name = $(a)
-      .parent()
-      .find('#video-title')
-      .text();
+    let name = $(a).parent().find('#video-title').text();
     name =
       (name &&
         cleanStr(name)
